@@ -1,12 +1,13 @@
-from django.conf import settings
+import os
 
 
 class RequestCountMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        self.request_count = 0
+        os.environ['request_count'] = '0'
 
     def __call__(self, request):
-        settings.request_count += 1
+        req = os.environ['request_count']
+        os.environ['request_count'] = str(int(req) + 1)
         response = self.get_response(request)
         return response

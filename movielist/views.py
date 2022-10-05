@@ -1,5 +1,6 @@
 # from django.shortcuts import render
 from datetime import datetime, timedelta
+import os
 from django.conf import settings
 import jwt
 from rest_framework.views import APIView
@@ -16,7 +17,7 @@ from .models import Collection, Movie, User
 # Create your views here.
 class RequestCountView(APIView):
     def get(self, request):
-        res = settings.request_count
+        res = os.environ['request_count']
         return Response({
             "Request Count": res 
         })
@@ -24,7 +25,7 @@ class RequestCountView(APIView):
 
 class RequestCountResetView(APIView):
     def post(self, request):
-        settings.request_count = 0
+        os.environ['request_count'] = '0'
         return Response({
             "message": "Request Count has been reset!"
         })
