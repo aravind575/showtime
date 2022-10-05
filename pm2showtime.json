@@ -1,0 +1,12 @@
+{
+    "apps": [
+      {
+        "name": "showtime",
+        "cwd": "/sciovo/showtime",
+        "args": "runserver 8223",
+        "script": "manage.py",
+        "exec_mode": "fork",
+        "exec_interpreter": "python3"
+      }
+    ]
+  }
