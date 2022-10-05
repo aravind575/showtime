@@ -36,3 +36,8 @@ class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
         fields = '__all__'
+
+class CollectionDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Collection
+        fields = ['title', 'uuid', 'description']

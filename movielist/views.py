@@ -9,7 +9,7 @@ from urllib3.util import Retry
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed, APIException
 from django.core.exceptions import ObjectDoesNotExist
-from .serializers import MovieDataSerializer, UserSerializer, CollectionSerializer, MovieSerializer
+from .serializers import CollectionDataSerializer, MovieDataSerializer, UserSerializer, CollectionSerializer, MovieSerializer
 from .models import Collection, Movie, User
 
 
@@ -83,7 +83,9 @@ class CollectionView(APIView):
 
         my_movies = Movie.objects.filter(username=username).only('genres')
         for movie in my_movies.iterator():
-            genres = genres + movie.genres
+            genres = genres + ',' + movie.genres
+
+        genres = genres[1:]
 
         genreList = genres.split(',')
         for genre in genreList:
@@ -93,9 +95,9 @@ class CollectionView(APIView):
                 fav_genres[genre] = 1
 
         fav_sorted_genres = [k for k, v in sorted(fav_genres.items(), key=lambda item: item[1])]
-        my_fav_genres = ''.join(fav_sorted_genres[-3:])
+        my_fav_genres = ",".join(fav_sorted_genres[-3:])
 
-        my_collections = list(Collection.objects.filter(username=username).defer('username'))
+        my_collections = CollectionDataSerializer(Collection.objects.filter(username=username), many=True).data
 
         res = {
             "is_success": True,
@@ -197,6 +199,16 @@ class CollectionEditView(APIView):
 
 class MoviesView(APIView):
     def get(self, request):
+
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('Unauthenticated! Please register/login!')
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Unauthenticated! Please register/login!')
+
         movie_url = 'https://demo.credy.in/api/v1/maya/movies/'
 
         retry_strategy = Retry(
@@ -262,7 +274,7 @@ class LoginView(APIView):
         response = Response()
         response.set_cookie(key='jwt', value=token, httponly=True)
         response.data = {
-            'jwt': token
+            'access_token': token
         }
         return response
 
